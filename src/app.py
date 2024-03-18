@@ -1,5 +1,9 @@
 import flet as ft
+from PIL import Image
 from buttons import MyButton
+from components import build_navbar, build_edit_options, build_sidebar, build_canvas, build_background, build_workspace
+from functions.files_operations import pick_files_open, pick_file_save, open_image
+
 
 def main(page: ft.Page) -> None:
     page.title = 'PhotoEditor'
@@ -8,20 +12,15 @@ def main(page: ft.Page) -> None:
     page.window_width = 1920
     page.padding = 0
 
-    options = ['rotate', 'zoom', 'blur', 'sharpen', 'saturation', 'lighten', 'darken']
-
-    def pick_files_result(e: ft.FilePickerResultEvent):
-        if e.files:
-            file_path = e.files[0].path.replace("\\", "/")
-            path.value = file_path
-            photo.src = file_path
-
-            path.update()
-            photo.update()
+    original_path = ft.Ref[ft.Text]()
+    current_path = ft.Ref[ft.Text]()
+    photo_flet = ft.Ref[ft.Image]()
+    photo_pil = ft.Ref[Image.Image]()
     
-
-    open_photo_pick = ft.FilePicker(on_result=pick_files_result)
+    open_photo_pick = ft.FilePicker(on_result=lambda e: pick_files_open(original_path, current_path, photo_flet, photo_pil, e))
+    save_photo_pick = ft.FilePicker(on_result=lambda e: pick_file_save(photo_pil.value, e))
     page.overlay.append(open_photo_pick)
+    page.overlay.append(save_photo_pick)
     
     open_photo = MyButton('Open photo')
     open_photo.define_onclick(lambda _: open_photo_pick.pick_files(
@@ -31,57 +30,18 @@ def main(page: ft.Page) -> None:
     )
     
     save_photo = MyButton('Save photo')
-    path = ft.Text('No opened photo')
+    save_photo.define_onclick(lambda _: save_photo_pick.save_file())
 
-    navbar = ft.Container(
-        width=page.window_max_width,
-        height=60,
-        bgcolor='#323445',
-        content=ft.Row(
-            controls=[ft.Container(ft.Text(value='Photo Editor', size=25),
-                                   margin=ft.margin.only(left=20)),
-                      ft.Icon(ft.icons.ENHANCE_PHOTO_TRANSLATE_ROUNDED),
-                      ft.VerticalDivider(width=20, thickness=2),
-                      open_photo.build_file(),
-                      save_photo.build_file(),
-                      path
-            ],   
-        ),
-    )
+    original_path = ft.Text(ref=original_path, value='No opened photo')
+    current_path = ft.Text(ref=current_path, value='No opened photo')
 
-    edit_options = ft.ListView(expand=True, spacing=20, padding=20)
-    for option in options:
-        edit_options.controls.append(MyButton(option).build_option())
-
-    sidebar = ft.Container(
-        width=215,
-        height=page.window_height,
-        bgcolor='#202230',
-        content=edit_options,
-    )
-
-    photo = ft.Image(src=path.value)
-
-    canvas = ft.Container(
-        width=1400,
-        height=780,
-        bgcolor=ft.colors.TRANSPARENT,
-        border=ft.border.all(width=0.2, color='white'),
-        padding=10,
-        content=photo
-    )
-
-    background = ft.Container(
-        width=1720,
-        height=1050,
-        content=canvas,
-        alignment=ft.alignment.Alignment(0, -0.4)
-    )
-
-    workspace = ft.Container(
-        ft.Row(controls=[sidebar, background]),
-         margin=ft.margin.symmetric(vertical=-10)
-    )
+    navbar = build_navbar(page, open_photo, save_photo, original_path)
+    edit_options = build_edit_options()
+    sidebar = build_sidebar(page, edit_options)
+    photo_flet = ft.Image(src=original_path.value)
+    canvas = build_canvas(photo_flet)
+    background = build_background(canvas)
+    workspace = build_workspace([sidebar, background])
 
     page.add(navbar)
     page.add(workspace)
