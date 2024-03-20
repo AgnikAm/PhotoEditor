@@ -1,5 +1,9 @@
 import flet as ft
+import numpy as np
 from buttons import MyButton
+from PIL import Image
+from functions.image_operations import add_image_operation
+
 
 def build_navbar(page: ft.Page, button1: MyButton, button2: MyButton, path: ft.Text) -> ft.Container:
     return ft.Container(
@@ -16,16 +20,27 @@ def build_navbar(page: ft.Page, button1: MyButton, button2: MyButton, path: ft.T
                         path
                 ],   
             ),
-        )
+    )
 
-def build_edit_options() -> ft.ListView:
+
+def build_option_btn(option: str, photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> ft.FilledButton:
+    option_btn = MyButton(option)
+    option_btn.define_onclick(lambda _: add_image_operation(option, photo_arr, image_flet))
+    option_btn = option_btn.build_option()
+
+    return option_btn
+
+
+def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> ft.ListView:
     list_view = ft.ListView(expand=True, spacing=20, padding=20)
-    options = ['rotate', 'zoom', 'blur', 'sharpen', 'saturation', 'lighten', 'darken']
+    options = ['rotate', 'resize', 'blur', 'sharpen', 'saturation', 'lighten', 'darken']
 
     for option in options:
-        list_view.controls.append(MyButton(option).build_option())
+        option_btn = build_option_btn(option, photo_arr, image_flet)
+        list_view.controls.append(option_btn)
 
     return list_view
+
 
 def build_sidebar(page: ft.Page, content) -> ft.Container:
     return ft.Container(
@@ -34,6 +49,7 @@ def build_sidebar(page: ft.Page, content) -> ft.Container:
         bgcolor='#202230',
         content=content
     )
+
 
 def build_canvas(image: ft.Image) -> ft.Container:
     return ft.Container(
@@ -45,13 +61,15 @@ def build_canvas(image: ft.Image) -> ft.Container:
         content=image
     )
 
+
 def build_background(content) -> ft.Container:
     return ft.Container(
             width=1720,
             height=1050,
             content=content,
             alignment=ft.alignment.Alignment(0, -0.4)
-        )
+    )
+
 
 def build_workspace(controls: list[ft.Container, ft.Container]) -> ft.Container:
     workspace = ft.Container(
