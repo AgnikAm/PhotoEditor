@@ -40,6 +40,7 @@ class MyButton:
         return ft.FilledButton(
             content=ft.Text(value=self.text.value, size=16),
             width=300,
+            height=40,
             style=self.style,
             on_click=self.onclick
         )

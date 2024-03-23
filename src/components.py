@@ -2,6 +2,7 @@ import flet as ft
 import numpy as np
 from buttons import MyButton
 from content import build_content
+from functions.image_operations import add_image_operation
 
 
 def build_navbar(page: ft.Page, button1: MyButton, button2: MyButton, path: ft.Text) -> ft.Container:
@@ -28,15 +29,19 @@ def build_navbar(page: ft.Page, button1: MyButton, button2: MyButton, path: ft.T
     )
 
 
-def build_operation_btn(operation: str, container: ft.Container) -> ft.FilledButton:
+def build_operation_btn(operation: str, container: ft.Container, photo_arr: np.ndarray, photo_flet: ft.Image) -> ft.FilledButton:
     operation_btn = MyButton(operation)
-    operation_btn.define_onclick(lambda _: option_animate(operation, container))
+    if operation != 'rotate':
+        operation_btn.define_onclick(lambda _: option_animate(operation, container))
+    else:
+        operation_btn.define_onclick(lambda _: add_image_operation(operation, photo_arr, photo_flet))
+
     operation_btn = operation_btn.build_operation()
 
     return operation_btn
 
 
-def build_operation_options(operation: str) -> ft.Container:
+def build_operation_options(operation: str, photo_arr, photo_flet) -> ft.Container:
     return ft.Container(
         width=300,
         height=3,
@@ -44,12 +49,14 @@ def build_operation_options(operation: str) -> ft.Container:
         margin=ft.margin.only(top=-5),
         border_radius=ft.border_radius.only(bottom_left=5, bottom_right=5),
         animate=ft.animation.Animation(500, "ease"),
-        content=build_content(operation)
+        content=build_content(operation, photo_arr, photo_flet)
     )
 
 
 def option_animate(operation, cont: ft.Container):
     match operation:
+        case 'rotate':
+            pass
         case 'resize':
             cont.height = 160 if cont.height == 3 else 3
         case _:
@@ -61,11 +68,11 @@ def option_animate(operation, cont: ft.Container):
 
 def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> ft.ListView:
     list_view = ft.ListView(expand=True, spacing=20, padding=20)
-    operations = ['rotate', 'resize', 'blur', 'sharpen', 'saturation', 'lighten', 'darken']
+    operations = ['rotate', 'resize', 'blur', 'sharpen', 'brightness', 'saturation']
 
     for operation in operations:
-        operation_btn_container = build_operation_options(operation)
-        operation_btn = build_operation_btn(operation, operation_btn_container)
+        operation_btn_container = build_operation_options(operation, photo_arr, image_flet)
+        operation_btn = build_operation_btn(operation, operation_btn_container, photo_arr, image_flet)
         list_view.controls.append(ft.Column([operation_btn, operation_btn_container]))
 
     return list_view
