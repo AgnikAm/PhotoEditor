@@ -34,11 +34,11 @@ class MyButton:
                 ft.MaterialState.DEFAULT: '#374362',
                 ft.MaterialState.HOVERED: '#1d3678'
             },
-            shape=ft.RoundedRectangleBorder(radius=5)
+            shape=ft.RoundedRectangleBorder(radius=5),
         )
 
         return ft.FilledButton(
-            content=self.text,
+            content=ft.Text(value=self.text.value, size=16),
             width=300,
             style=self.style,
             on_click=self.onclick

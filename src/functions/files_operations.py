@@ -6,7 +6,6 @@ import numpy as np
 import base64
 from PIL import Image
 
-
 def create_copy(file_path: str) -> str:
     file_name = os.path.basename(file_path)
     destination_dir = '../tmp/'
@@ -21,18 +20,18 @@ def create_copy(file_path: str) -> str:
 
 
 def pick_files_open(old_path, new_path, photo_flet, photo_arr, e: ft.FilePickerResultEvent) -> None:
-        if e.files:
-            file_path = e.files[0].path.replace("\\", "/")
-            photo_flet.src_base64 = ""
-            old_path.value = file_path
-            old_path.update()
+    if e.files:
+        file_path = e.files[0].path.replace("\\", "/")
+        photo_flet.src_base64 = ""
+        old_path.value = file_path
+        old_path.update()
 
-            new_file_path = create_copy(file_path)
-            new_path.value = new_file_path
-            photo_flet.src = new_file_path
-            photo_arr.value = np.asarray(open_image(new_file_path))
+        new_file_path = create_copy(file_path)
+        new_path.value = new_file_path
+        photo_flet.src = new_file_path
+        photo_arr.value = np.asarray(open_image(new_file_path))
 
-            photo_flet.update()
+        photo_flet.update()
 
 
 def pick_file_save(photo_arr: np.ndarray, e: ft.FilePickerResultEvent) -> None:
