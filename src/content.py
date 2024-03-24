@@ -33,8 +33,8 @@ def build_resize(name: str, photo_arr, photo_flet):
     )
 
 
-def build_slider(name, photo_arr, photo_flet, min, max, division, label):
-    slider = ft.Slider(min=min, max=max, divisions=division, label=label, round=1)
+def build_slider(name, photo_arr, photo_flet, min, max, division, label, round):
+    slider = ft.Slider(min=min, max=max, divisions=division, label=label, round=round)
 
     apply_button = MyButton('apply')
     apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [slider.value]))
@@ -53,12 +53,12 @@ def build_content(name: str, photo_arr, photo_flet):
         case 'resize':
             return build_resize(name, photo_arr, photo_flet)
         case 'blur':
-            return build_slider(name, photo_arr, photo_flet, 0, 10, 40, "{value}")
+            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 2)
         case 'sharpen':
-            return build_slider(name, photo_arr, photo_flet, 0, 10, 21, "{value}")
+            return build_slider(name, photo_arr, photo_flet, 1, 10, 9, "{value}", 1)
         case 'brightness':
-            return build_slider(name, photo_arr, photo_flet, -50, 50, 20, "{value}")
+            return build_slider(name, photo_arr, photo_flet, -40, 40, 40, "{value}", 1)
         case 'saturation':
-            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}")
+            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1)
 
     

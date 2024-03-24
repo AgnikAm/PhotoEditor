@@ -23,26 +23,50 @@ def rotate(image_arr: np.ndarray, image_flet: ft.Image) -> None:
     update_image(image_arr, image_flet)
 
 
-def resize(image_arr: np.ndarray, image_flet: ft.Image, values: list) -> None:
-    image_arr.value = cv2.resize(image_arr.value, (int(values[0]), int(values[1])), interpolation=cv2.INTER_LINEAR)
+def resize(image_arr: np.ndarray, image_flet: ft.Image, values: list[float]) -> None:
+    if values is None:
+        return
+    
+    new_width = int(values[0])
+    new_height = int(values[1])
+    
+    image_arr.value = cv2.resize(image_arr.value, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
     update_image(image_arr, image_flet)
 
 
-def blur(image_arr: np.ndarray, image_flet: ft.Image, values: Optional[list] = None) -> None:
-    if values is None:
-        print("Invalid values provided for blur operation")
+def blur(image_arr: np.ndarray, image_flet: ft.Image, blur_factor: list[float]) -> None:
+    if blur_factor is None:
         return
     
     pil_image = Image.fromarray(image_arr.value)
-    blurred_image = pil_image.filter(ImageFilter.GaussianBlur(int(values[0])))
+    blurred_image = pil_image.filter(ImageFilter.GaussianBlur(blur_factor[0]))
     image_arr.value = np.array(blurred_image)
     update_image(image_arr, image_flet)
 
 
-def sharpen(image_arr: np.ndarray, image_flet: ft.Image, values: Optional[list] = None) -> None:
-    kernel_size = int(values[0])
+def sharpen(image_arr: np.ndarray, image_flet: ft.Image, kernel_size: list[float]) -> None:
+    if kernel_size is None:
+        return
+    
+    mapping = {
+        0: 1,
+        1: 3,
+        2: 5,
+        3: 7,
+        4: 9,
+        5: 11,
+        6: 13,
+        7: 15,
+        8: 17,
+        9: 19,
+        10: 21
+    }
+
+    kernel_size = mapping[kernel_size[0]]
+    
     blurred = cv2.GaussianBlur(image_arr.value, (kernel_size, kernel_size), 1.0)
     sharpened = 2.0 * image_arr.value - float(1.0) * blurred
+    
     sharpened = np.maximum(sharpened, np.zeros(sharpened.shape))
     sharpened = np.minimum(sharpened, 255 * np.ones(sharpened.shape))
     sharpened = sharpened.round().astype(np.uint8)
@@ -51,32 +75,53 @@ def sharpen(image_arr: np.ndarray, image_flet: ft.Image, values: Optional[list] 
     update_image(image_arr, image_flet)
 
 
-def brightness(image_arr, image_flet, values):
-    if values is None:
-        print("Invalid values provided for lighten operation")
+def brightness(image_arr: np.ndarray, image_flet: ft.Image, brightness_factor: list[float]):
+    if brightness_factor is None:
         return
+    
+    if image_arr.value.shape[2] == 4:
+        bgr_image = image_arr.value[:, :, :3]
+        alpha_channel = image_arr.value[:, :, 3]
 
-    brightness_adjustment = values[0]
+        hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HSV)
+        hsv_image[:, :, 2] = np.clip(hsv_image[:, :, 2] + brightness_factor[0], 0, 255)
+        bgr_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
 
-    bgr_image = image_arr.value[:, :, :3]
-    alpha_channel = image_arr.value[:, :, 3]
+        image_arr.value = np.dstack((bgr_image, alpha_channel))
+    else:
+        bgr_image = image_arr.value
 
-    hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HSV)
-    hsv_image[:, :, 2] = np.clip(hsv_image[:, :, 2] + brightness_adjustment, 0, 255)
-    bgr_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+        hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HSV)
+        hsv_image[:, :, 2] = np.clip(hsv_image[:, :, 2] + brightness_factor[0], 0, 255)
+        bgr_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
 
-    image_arr.value = np.dstack((bgr_image, alpha_channel))
+        image_arr.value = bgr_image
 
     update_image(image_arr, image_flet)
 
 
-def saturation(image_arr: np.ndarray, image_flet: ft.Image, saturation_factor: float) -> None:
-    hsv_image = cv2.cvtColor(image_arr.value, cv2.COLOR_BGR2HSV)
-    hsv_image[:, :, 1] = np.clip(hsv_image[:, :, 1] * saturation_factor, 0, 255)
+def saturation(image_arr: np.ndarray, image_flet: ft.Image, saturation_factor: list[float]) -> None:
+    if saturation_factor is None:
+        return
+    
+    if image_arr.value.shape[2] == 4:
+        bgr_image = image_arr.value[:, :, :3]
+        alpha_channel = image_arr.value[:, :, 3]
 
-    bgr_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+        hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HSV)
+        hsv_image[:, :, 1] = np.clip(hsv_image[:, :, 1] * saturation_factor[0], 0, 255)
+        bgr_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
 
-    image_arr.value = bgr_image
+        image_arr.value = np.dstack((bgr_image, alpha_channel))
+    else:
+        bgr_image = image_arr.value
+
+        hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HSV)
+        hsv_image[:, :, 1] = np.clip(hsv_image[:, :, 1] * saturation_factor[0], 0, 255)
+        bgr_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+
+        image_arr.value = bgr_image
+
     update_image(image_arr, image_flet)
 
 
