@@ -2,11 +2,11 @@ import flet as ft
 import numpy as np
 import cv2
 from PIL import Image, ImageFilter, ImageChops
-from functions.files_operations import update_image
+from functions.files_operations import update_image, add_to_history
 from typing import Callable, Optional
 
 
-def rotate(image_arr: np.ndarray, image_flet: ft.Image) -> None:
+def rotate(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
     angle = 90
     height, width = image_arr.value.shape[:2]
     center = (width // 2, height // 2)
@@ -20,31 +20,39 @@ def rotate(image_arr: np.ndarray, image_flet: ft.Image) -> None:
     rotation_matrix[1, 2] += bound_h / 2 - center[1]
 
     image_arr.value = cv2.warpAffine(image_arr.value, rotation_matrix, (bound_w, bound_h), flags=cv2.INTER_NEAREST)
+
+    add_to_history(image_arr)
     update_image(image_arr, image_flet)
 
 
-def resize(image_arr: np.ndarray, image_flet: ft.Image, values: list[float]) -> None:
+def resize(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float]) -> None:
     if values is None:
         return
+    
     
     new_width = int(values[0])
     new_height = int(values[1])
     
     image_arr.value = cv2.resize(image_arr.value, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+
+    add_to_history(image_arr)
     update_image(image_arr, image_flet)
 
 
-def blur(image_arr: np.ndarray, image_flet: ft.Image, blur_factor: list[float]) -> None:
+def blur(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, blur_factor: list[float]) -> None:
     if blur_factor is None:
         return
     
+
     pil_image = Image.fromarray(image_arr.value)
     blurred_image = pil_image.filter(ImageFilter.GaussianBlur(blur_factor[0]))
     image_arr.value = np.array(blurred_image)
+
+    add_to_history(image_arr)
     update_image(image_arr, image_flet)
 
 
-def sharpen(image_arr: np.ndarray, image_flet: ft.Image, kernel_size: list[float]) -> None:
+def sharpen(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, kernel_size: list[float]) -> None:
     if kernel_size is None:
         return
     
@@ -72,13 +80,15 @@ def sharpen(image_arr: np.ndarray, image_flet: ft.Image, kernel_size: list[float
     sharpened = sharpened.round().astype(np.uint8)
     
     image_arr.value = np.array(sharpened)
+
+    add_to_history(image_arr)
     update_image(image_arr, image_flet)
 
 
-def brightness(image_arr: np.ndarray, image_flet: ft.Image, brightness_factor: list[float]):
+def brightness(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, brightness_factor: list[float]):
     if brightness_factor is None:
         return
-    
+
     if image_arr.value.shape[2] == 4:
         bgr_image = image_arr.value[:, :, :3]
         alpha_channel = image_arr.value[:, :, 3]
@@ -97,13 +107,14 @@ def brightness(image_arr: np.ndarray, image_flet: ft.Image, brightness_factor: l
 
         image_arr.value = bgr_image
 
+    add_to_history(image_arr)
     update_image(image_arr, image_flet)
 
 
-def saturation(image_arr: np.ndarray, image_flet: ft.Image, saturation_factor: list[float]) -> None:
+def saturation(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, saturation_factor: list[float]) -> None:
     if saturation_factor is None:
         return
-    
+
     if image_arr.value.shape[2] == 4:
         bgr_image = image_arr.value[:, :, :3]
         alpha_channel = image_arr.value[:, :, 3]
@@ -122,10 +133,11 @@ def saturation(image_arr: np.ndarray, image_flet: ft.Image, saturation_factor: l
 
         image_arr.value = bgr_image
 
+    add_to_history(image_arr)
     update_image(image_arr, image_flet)
+    
 
-
-def add_image_operation(name: str, image_arr: np.ndarray, image_flet: ft.Image, values: Optional[list] = None) -> Callable:
+def add_image_operation(name: str, image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: Optional[list] = None) -> Callable:
     match name:
         case 'rotate':
             return rotate(image_arr, image_flet)

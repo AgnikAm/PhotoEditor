@@ -2,7 +2,7 @@ import flet as ft
 import numpy as np
 from PIL import Image
 from buttons import MyButton
-from components import build_navbar, build_edit_options, build_sidebar, build_canvas, build_background, build_workspace
+from components import build_navbar, build_edit_options, undo_redo_buttons, build_sidebar, build_canvas, build_background, build_workspace
 from functions.files_operations import pick_files_open, pick_file_save
 
 
@@ -38,8 +38,23 @@ def main(page: ft.Page) -> None:
 
     navbar = build_navbar(page, open_photo, save_photo, original_path)
     photo_flet = ft.Image(src=current_path.value)
+
     edit_options = build_edit_options(photo_arr, photo_flet)
-    sidebar = build_sidebar(page, edit_options)
+    command_buttons = ft.Container(undo_redo_buttons(photo_arr, photo_flet), margin=ft.margin.only(left=60))
+
+    static_sidebar = build_sidebar(60, command_buttons)
+    dynamic_sidebar = build_sidebar(page.window_height - static_sidebar.height, edit_options)
+
+    sidebar = ft.Column(
+        controls=[
+            static_sidebar,
+            ft.Container(
+                content=dynamic_sidebar,
+                margin=ft.margin.only(top=-10)
+            )
+        ]
+    )
+
     canvas = build_canvas(photo_flet)
     background = build_background(canvas)
     workspace = build_workspace([sidebar, background])

@@ -1,10 +1,12 @@
 import flet as ft
 import numpy as np
+from typing import Optional
+
 from buttons import MyButton
 from functions.image_operations import add_image_operation
 
 
-def build_resize(name: str, photo_arr, photo_flet):
+def build_resize(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
     width = ft.TextField(
         label="width",
         border_color='#d9e3ff',
@@ -33,8 +35,19 @@ def build_resize(name: str, photo_arr, photo_flet):
     )
 
 
-def build_slider(name, photo_arr, photo_flet, min, max, division, label, round):
-    slider = ft.Slider(min=min, max=max, divisions=division, label=label, round=round)
+def build_slider(
+        name: str, 
+        photo_arr: ft.Ref[np.ndarray], 
+        photo_flet: ft.Image, 
+        min: float, 
+        max: float, 
+        division: int, 
+        label: str, 
+        round: int, 
+        value: Optional[float] = None
+    ) -> ft.Container:
+
+    slider = ft.Slider(min=min, max=max, divisions=division, label=label, round=round, value=value)
 
     apply_button = MyButton('apply')
     apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [slider.value]))
@@ -48,7 +61,7 @@ def build_slider(name, photo_arr, photo_flet, min, max, division, label, round):
     )
 
 
-def build_content(name: str, photo_arr, photo_flet):
+def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
     match name:
         case 'resize':
             return build_resize(name, photo_arr, photo_flet)
@@ -59,6 +72,8 @@ def build_content(name: str, photo_arr, photo_flet):
         case 'brightness':
             return build_slider(name, photo_arr, photo_flet, -40, 40, 40, "{value}", 1)
         case 'saturation':
-            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1)
+            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1, 1)
+        case 'contrast':
+            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1, 1)
 
     

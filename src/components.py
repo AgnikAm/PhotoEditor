@@ -3,6 +3,7 @@ import numpy as np
 from buttons import MyButton
 from content import build_content
 from functions.image_operations import add_image_operation
+from functions.files_operations import undo_command, redo_command
 
 
 def build_navbar(page: ft.Page, button1: MyButton, button2: MyButton, path: ft.Text) -> ft.Container:
@@ -29,7 +30,7 @@ def build_navbar(page: ft.Page, button1: MyButton, button2: MyButton, path: ft.T
     )
 
 
-def build_operation_btn(operation: str, container: ft.Container, photo_arr: np.ndarray, photo_flet: ft.Image) -> ft.FilledButton:
+def build_operation_btn(operation: str, container: ft.Container, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.FilledButton:
     operation_btn = MyButton(operation)
     if operation != 'rotate':
         operation_btn.define_onclick(lambda _: option_animate(operation, container))
@@ -41,7 +42,7 @@ def build_operation_btn(operation: str, container: ft.Container, photo_arr: np.n
     return operation_btn
 
 
-def build_operation_options(operation: str, photo_arr, photo_flet) -> ft.Container:
+def build_operation_options(operation: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
     return ft.Container(
         width=300,
         height=3,
@@ -53,7 +54,7 @@ def build_operation_options(operation: str, photo_arr, photo_flet) -> ft.Contain
     )
 
 
-def option_animate(operation, cont: ft.Container):
+def option_animate(operation: str, cont: ft.Container) -> None:
     match operation:
         case 'rotate':
             pass
@@ -66,24 +67,62 @@ def option_animate(operation, cont: ft.Container):
     cont.update()
 
 
-def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> ft.ListView:
-    list_view = ft.ListView(expand=True, spacing=20, padding=20)
-    operations = ['rotate', 'resize', 'blur', 'sharpen', 'brightness', 'saturation']
-
-    for operation in operations:
-        operation_btn_container = build_operation_options(operation, photo_arr, image_flet)
-        operation_btn = build_operation_btn(operation, operation_btn_container, photo_arr, image_flet)
-        list_view.controls.append(ft.Column([operation_btn, operation_btn_container]))
-
-    return list_view
+def type_divider(text: str) -> ft.Column:
+    return ft.Column(
+        controls=[
+            ft.Text(text),
+            ft.Divider()
+        ]
+    )
 
 
-def build_sidebar(page: ft.Page, content) -> ft.Container:
+def undo_redo_buttons(photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Row:
+    undo_icon = ft.Icon(ft.icons.UNDO_ROUNDED, color=ft.colors.WHITE, size=20)
+    redo_icon = ft.Icon(ft.icons.REDO_ROUNDED, color=ft.colors.WHITE, size=20)
+
+    undo = MyButton()
+    undo.define_onclick(lambda _: undo_command(photo_arr, photo_flet))
+
+    redo = MyButton()
+    redo.define_onclick(lambda _: redo_command(photo_arr, photo_flet))
+
+    undo = undo.build_command(undo_icon)
+    redo = redo.build_command(redo_icon)
+
+    return ft.Row(controls=[undo, redo])
+
+
+def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> ft.Container:
+    list_view = ft.ListView(spacing=20, padding=20)
+    elements = [
+        type_divider('Shape'), 
+        'rotate', 
+        'resize', 
+        type_divider('Sharpness'), 
+        'blur', 
+        'sharpen',
+        type_divider('Colors'), 
+        'brightness', 
+        'saturation'
+    ]
+
+    for element in elements:
+        if not isinstance(element, str):
+            list_view.controls.append(element)
+        else:
+            operation_btn_container = build_operation_options(element, photo_arr, image_flet)
+            operation_btn = build_operation_btn(element, operation_btn_container, photo_arr, image_flet)
+            list_view.controls.append(ft.Column([operation_btn, operation_btn_container]))
+
+    return ft.Container(content=list_view, margin=ft.margin.only(bottom=140))
+
+
+def build_sidebar(height: int, content: ft.Control) -> ft.Container:
     return ft.Container(
-        width=275,
-        height=page.window_height,
-        bgcolor='#202230',
-        content=content,
+            width=275,
+            height=height,
+            bgcolor='#202230',
+            content=content
     )
 
 
@@ -98,7 +137,7 @@ def build_canvas(image: ft.Image) -> ft.Container:
     )
 
 
-def build_background(content) -> ft.Container:
+def build_background(content: ft.Control) -> ft.Container:
     return ft.Container(
             width=1650,
             height=1050,
