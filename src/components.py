@@ -100,10 +100,11 @@ def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> f
         'resize', 
         type_divider('Sharpness'), 
         'blur', 
-        'sharpen',
+        'sharpness',
         type_divider('Colors'), 
         'brightness', 
-        'saturation'
+        'saturation',
+        'contrast'
     ]
 
     for element in elements:

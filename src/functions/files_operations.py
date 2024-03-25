@@ -95,8 +95,6 @@ def update_image(photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> None:
     image_pil.save(buff, format='PNG')
     src_base64 = base64.b64encode(buff.getvalue()).decode("utf-8")
 
-    print(len(history))
-
     photo_flet.src_base64 = src_base64
     photo_flet.update()
 

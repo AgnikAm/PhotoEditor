@@ -52,7 +52,7 @@ def blur(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, blur_factor: list[
     update_image(image_arr, image_flet)
 
 
-def sharpen(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, kernel_size: list[float]) -> None:
+def sharpness(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, kernel_size: list[float]) -> None:
     if kernel_size is None:
         return
     
@@ -135,6 +135,37 @@ def saturation(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, saturation_f
 
     add_to_history(image_arr)
     update_image(image_arr, image_flet)
+
+
+def contrast(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, contrast_factor: list[float]) -> None:
+    if contrast_factor is None:
+        return
+    
+    if image_arr.value.shape[2] == 4:
+        bgr_image = image_arr.value[:, :, :3]
+        alpha_channel = image_arr.value[:, :, 3]
+
+        contrast = contrast_factor[0]
+        brightness = int(round(255 * (1 - contrast) / 2))
+        adjusted = cv2.addWeighted(bgr_image, contrast, bgr_image, 0, brightness)
+
+
+        adjusted_with_alpha = np.dstack((adjusted, alpha_channel))
+
+        image_arr.value = adjusted_with_alpha
+        
+        add_to_history(image_arr)
+        update_image(image_arr, image_flet)
+
+    else:
+        contrast = contrast_factor[0]
+        brightness = int(round(255 * (1 - contrast) / 2))
+        adjusted = cv2.addWeighted(image_arr.value, contrast, image_arr.value, 0, brightness)
+
+        image_arr.value = adjusted
+        
+        add_to_history(image_arr)
+        update_image(image_arr, image_flet)
     
 
 def add_image_operation(name: str, image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: Optional[list] = None) -> Callable:
@@ -145,10 +176,12 @@ def add_image_operation(name: str, image_arr: ft.Ref[np.ndarray], image_flet: ft
             return resize(image_arr, image_flet, values)
         case 'blur':
             return blur(image_arr, image_flet, values)
-        case 'sharpen':
-            return sharpen(image_arr, image_flet, values)
+        case 'sharpness':
+            return sharpness(image_arr, image_flet, values)
         case 'brightness':
             return brightness(image_arr, image_flet, values)
         case 'saturation':
             return saturation(image_arr, image_flet, values)
+        case 'contrast':
+            return contrast(image_arr, image_flet, values)
         

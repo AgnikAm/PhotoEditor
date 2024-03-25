@@ -67,7 +67,7 @@ def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image
             return build_resize(name, photo_arr, photo_flet)
         case 'blur':
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 2)
-        case 'sharpen':
+        case 'sharpness':
             return build_slider(name, photo_arr, photo_flet, 1, 10, 9, "{value}", 1)
         case 'brightness':
             return build_slider(name, photo_arr, photo_flet, -40, 40, 40, "{value}", 1)
