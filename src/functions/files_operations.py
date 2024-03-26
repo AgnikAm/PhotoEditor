@@ -59,7 +59,6 @@ def pick_files_open(old_path: str, new_path: str, photo_flet: ft.Image, photo_ar
         add_to_history(photo_arr)
         current_index = 0
 
-        print(len(history))
         photo_flet.update()
 
 
