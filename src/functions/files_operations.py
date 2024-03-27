@@ -62,9 +62,13 @@ def pick_files_open(old_path: str, new_path: str, photo_flet: ft.Image, photo_ar
         photo_flet.update()
 
 
-def pick_file_save(photo_arr: ft.Ref[np.ndarray], e: ft.FilePickerResultEvent) -> None:
+def pick_file_save(photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image, e: ft.FilePickerResultEvent) -> None:
     save_location = e.path
     if save_location:
+        if '.' not in save_location:
+            original_extension = os.path.splitext(photo_flet.src)[1]
+            save_location += original_extension
+            
         save_image(photo_arr, save_location)
 
 

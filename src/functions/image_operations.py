@@ -25,6 +25,14 @@ def rotate(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
     update_image(image_arr, image_flet)
 
 
+def flip(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float]) -> None:
+    flipped_image = cv2.flip(image_arr.value, int(values[0]))
+    image_arr.value = flipped_image
+
+    add_to_history(image_arr)
+    update_image(image_arr, image_flet)
+
+
 def resize(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float]) -> None:
     if values is None:
         return
@@ -209,6 +217,8 @@ def add_image_operation(name: str, image_arr: ft.Ref[np.ndarray], image_flet: ft
     match name:
         case 'rotate':
             return rotate(image_arr, image_flet)
+        case 'flip':
+            return flip(image_arr, image_flet, values)
         case 'resize':
             return resize(image_arr, image_flet, values)
         case 'blur':

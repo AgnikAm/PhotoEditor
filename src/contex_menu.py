@@ -55,14 +55,44 @@ def build_slider(
     
     return ft.Container(
         content=ft.Column(
-            controls=[slider, ft.Container(content=apply_button, alignment=ft.alignment.center)],
+            controls=[
+                slider, 
+                ft.Container(content=apply_button, alignment=ft.alignment.center)
+            ],
         ),
         margin=ft.margin.only(top=40, left=5, right=5)
     )
 
 
+def build_radio(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
+    radio_group = ft.RadioGroup(
+        content=ft.Row(
+            controls=[
+                ft.Radio(value=0, label='X axis'),
+                ft.Radio(value=1, label='Y axis')
+            ]
+        )
+    )
+
+    apply_button = MyButton('apply')
+    apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [radio_group.value]))
+    apply_button = apply_button.build_file()
+
+
+    return ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Container(content=radio_group, margin=ft.margin.only(top=15, left=40)), 
+                ft.Container(content=apply_button, alignment=ft.alignment.center)
+            ]
+        )
+    )
+
+
 def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
     match name:
+        case 'flip':
+            return build_radio(name, photo_arr, photo_flet)
         case 'resize':
             return build_resize(name, photo_arr, photo_flet)
         case 'blur':

@@ -19,19 +19,21 @@ def main(page: ft.Page) -> None:
     photo_arr = ft.Ref[np.ndarray]()
     
     open_photo_pick = ft.FilePicker(on_result=lambda e: pick_files_open(original_path, current_path, photo_flet, photo_arr, e))
-    save_photo_pick = ft.FilePicker(on_result=lambda e: pick_file_save(photo_arr, e))
+    save_photo_pick = ft.FilePicker(on_result=lambda e: pick_file_save(photo_arr, photo_flet, e))
     page.overlay.append(open_photo_pick)
     page.overlay.append(save_photo_pick)
     
     open_photo = MyButton('Open photo')
     open_photo.define_onclick(lambda _: open_photo_pick.pick_files(
         allow_multiple=False,
-        file_type=ft.FilePickerFileType.IMAGE
+        allowed_extensions=['png', 'jpg', 'jpeg']
         )
     )
     
     save_photo = MyButton('Save photo')
-    save_photo.define_onclick(lambda _: save_photo_pick.save_file())
+    save_photo.define_onclick(lambda _: save_photo_pick.save_file(
+        allowed_extensions=['png', 'jpg', 'jpeg']
+    ))
 
     original_path = ft.Text(ref=original_path, value='No opened photo')
     current_path = ft.Text(ref=current_path, value='No opened photo')

@@ -1,7 +1,7 @@
 import flet as ft
 import numpy as np
 from buttons import MyButton
-from content import build_content
+from contex_menu import build_content
 from functions.image_operations import add_image_operation
 from functions.files_operations import undo_command, redo_command
 
@@ -60,8 +60,10 @@ def option_animate(operation: str, cont: ft.Container) -> None:
             pass
         case 'grayscale':
             pass
+        case 'flip':
+            cont.height = 100 if cont.height == 3 else 3
         case 'resize':
-            cont.height = 160 if cont.height == 3 else 3
+            cont.height = 165 if cont.height == 3 else 3
         case _:
             cont.height = 140 if cont.height == 3 else 3
             
@@ -98,7 +100,8 @@ def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> f
     list_view = ft.ListView(spacing=20, padding=20)
     elements = [
         type_divider('Shape'), 
-        'rotate', 
+        'rotate',
+        'flip',
         'resize', 
         type_divider('Sharpness'), 
         'blur', 
