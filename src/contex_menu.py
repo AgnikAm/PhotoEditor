@@ -64,6 +64,31 @@ def build_slider(
     )
 
 
+def build_color_sliders(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
+    red = ft.Slider(min=0, max=1, divisions=255, label="{value}", value=1, round=3, height=20)
+    green = ft.Slider(min=0, max=1, divisions=255, label="{value}", value=1, round=3, height=20)
+    blue = ft.Slider(min=0, max=1, divisions=255, label="{value}", value=1, round=3, height=20)
+
+    apply_button = MyButton('apply')
+    apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [red.value, green.value, blue.value]))
+    apply_button = apply_button.build_file()
+
+    return ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Container(ft.Text('Red'), margin=ft.margin.only(left=15)),
+                red,
+                ft.Container(ft.Text('Green'), margin=ft.margin.only(left=15)),
+                green,
+                ft.Container(ft.Text('Blue'), margin=ft.margin.only(left=15)),
+                blue,
+                ft.Container(content=apply_button, alignment=ft.alignment.center)
+            ],
+        ),
+        margin=ft.margin.only(top=15, left=5, right=5)
+    )
+
+
 def build_radio(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
     radio_group = ft.RadioGroup(
         content=ft.Row(
@@ -96,11 +121,15 @@ def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image
         case 'resize':
             return build_resize(name, photo_arr, photo_flet)
         case 'blur':
-            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 2)
+            return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 2, 0)
         case 'sharpen':
-            return build_slider(name, photo_arr, photo_flet, 1, 10, 9, "{value}", 1)
+            return build_slider(name, photo_arr, photo_flet, 1, 10, 9, "{value}", 1, 1)
+        case 'color adjustments':
+            return build_color_sliders(name, photo_arr, photo_flet)
+        case 'hue':
+            return build_slider(name, photo_arr, photo_flet, 0, 179, 179, "{value}", 0, 1)
         case 'brightness':
-            return build_slider(name, photo_arr, photo_flet, -40, 40, 40, "{value}", 1)
+            return build_slider(name, photo_arr, photo_flet, -40, 40, 40, "{value}", 1, 0)
         case 'saturation':
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1, 1)
         case 'contrast':

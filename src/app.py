@@ -17,6 +17,7 @@ def main(page: ft.Page) -> None:
     current_path = ft.Ref[ft.Text]()
     photo_flet = ft.Ref[ft.Image]()
     photo_arr = ft.Ref[np.ndarray]()
+    photo_arr.value = None
     
     open_photo_pick = ft.FilePicker(on_result=lambda e: pick_files_open(original_path, current_path, photo_flet, photo_arr, e))
     save_photo_pick = ft.FilePicker(on_result=lambda e: pick_file_save(photo_arr, photo_flet, e))

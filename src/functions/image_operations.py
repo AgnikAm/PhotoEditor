@@ -7,6 +7,9 @@ from typing import Callable, Optional
 
 
 def rotate(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
+    if image_arr.value is None:
+        return
+    
     angle = 90
     height, width = image_arr.value.shape[:2]
     center = (width // 2, height // 2)
@@ -26,6 +29,9 @@ def rotate(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
 
 
 def flip(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float]) -> None:
+    if image_arr.value is None:
+        return
+    
     flipped_image = cv2.flip(image_arr.value, int(values[0]))
     image_arr.value = flipped_image
 
@@ -34,10 +40,9 @@ def flip(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float
 
 
 def resize(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float]) -> None:
-    if values is None:
+    if values is None or image_arr.value is None:
         return
     
-
     new_width = int(values[0])
     new_height = int(values[1])
     
@@ -48,7 +53,7 @@ def resize(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[flo
 
 
 def blur(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, blur_factor: list[float]) -> None:
-    if blur_factor is None:
+    if blur_factor is None or image_arr.value is None:
         return
     
     pil_image = Image.fromarray(image_arr.value)
@@ -60,7 +65,7 @@ def blur(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, blur_factor: list[
 
 
 def sharpen(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, kernel_size: list[float]) -> None:
-    if kernel_size is None:
+    if kernel_size is None or image_arr.value is None:
         return
     
     mapping = {
@@ -92,8 +97,75 @@ def sharpen(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, kernel_size: li
     update_image(image_arr, image_flet)
 
 
+def color_adjustments(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, colors: list[float]) -> None:
+    if colors is None or image_arr.value is None or len(image_arr.value.shape) != 3 or image_arr.value.shape[2] < 3:
+        return
+    
+    image = image_arr.value.astype(np.float32)
+    image[:, :, 0] *= colors[0]
+    image[:, :, 1] *= colors[1]
+    image[:, :, 2] *= colors[2]
+
+    image = np.clip(image, 0, 255).astype(np.uint8)
+    image_arr.value = image
+
+    add_to_history(image_arr)
+    update_image(image_arr, image_flet)
+
+
+def hue(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, hue_factor: list[float]) -> None:
+    if hue_factor is None or image_arr.value is None or len(image_arr.value.shape) != 3 or image_arr.value.shape[2] < 3:
+        return
+    
+    if image_arr.value.shape[2] == 3:
+        bgr_image = image_arr.value
+        hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_RGB2HSV)
+
+        hsv_image[:, :, 0] = (hsv_image[:, :, 0] + hue_factor[0]) % 180
+        adjusted_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2RGB)
+
+        image_arr.value = adjusted_image
+
+    elif image_arr.value.shape[2] == 4:
+        bgr_image = image_arr.value[:, :, :3]
+        alpha_channel = image_arr.value[:, :, 3]
+
+        hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HSV)
+        hsv_image[:, :, 0] = (hsv_image[:, :, 0] + hue_factor[0]) % 180
+        bgr_adjusted_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+
+        adjusted_image = np.dstack((bgr_adjusted_image, alpha_channel))
+
+        image_arr.value = adjusted_image
+
+    add_to_history(image_arr)
+    update_image(image_arr, image_flet)
+
+
+def grayscale(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
+    if image_arr.value is None:
+        return
+    
+    if len(image_arr.value.shape) == 3 and image_arr.value.shape[2] == 4:
+        bgr_image = image_arr.value[:, :, :3]
+        alpha_channel = image_arr.value[:, :, 3]
+
+        grayscale_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
+        grayscale_with_alpha = np.dstack((grayscale_image, alpha_channel))
+
+        image_arr.value = grayscale_with_alpha
+
+    else:
+        grayscale_image = cv2.cvtColor(image_arr.value, cv2.COLOR_BGR2GRAY)
+
+        image_arr.value = grayscale_image
+
+    add_to_history(image_arr)
+    update_image(image_arr, image_flet)
+
+
 def brightness(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, brightness_factor: list[float]):
-    if brightness_factor is None:
+    if brightness_factor is None or image_arr.value is None:
         return
     
     if len(image_arr.value.shape) == 3:
@@ -133,7 +205,7 @@ def brightness(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, brightness_f
 
 
 def saturation(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, saturation_factor: list[float]) -> None:
-    if saturation_factor is None:
+    if saturation_factor is None or image_arr.value is None:
         return
 
     if len(image_arr.value.shape) == 3:
@@ -168,7 +240,7 @@ def saturation(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, saturation_f
 
 
 def contrast(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, contrast_factor: list[float]) -> None:
-    if contrast_factor is None:
+    if contrast_factor is None or image_arr.value is None:
         return
     
     if len(image_arr.value.shape) == 3 and image_arr.value.shape[2] == 4:
@@ -194,25 +266,6 @@ def contrast(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, contrast_facto
     update_image(image_arr, image_flet)
 
 
-def grayscale(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
-    if len(image_arr.value.shape) == 3 and image_arr.value.shape[2] == 4:
-        bgr_image = image_arr.value[:, :, :3]
-        alpha_channel = image_arr.value[:, :, 3]
-
-        grayscale_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
-        grayscale_with_alpha = np.dstack((grayscale_image, alpha_channel))
-
-        image_arr.value = grayscale_with_alpha
-
-    else:
-        grayscale_image = cv2.cvtColor(image_arr.value, cv2.COLOR_BGR2GRAY)
-
-        image_arr.value = grayscale_image
-
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
-
-
 def add_image_operation(name: str, image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: Optional[list] = None) -> Callable:
     match name:
         case 'rotate':
@@ -225,12 +278,16 @@ def add_image_operation(name: str, image_arr: ft.Ref[np.ndarray], image_flet: ft
             return blur(image_arr, image_flet, values)
         case 'sharpen':
             return sharpen(image_arr, image_flet, values)
+        case 'color adjustments':
+            return color_adjustments(image_arr, image_flet, values)
+        case 'hue':
+            return hue(image_arr, image_flet, values)
+        case 'grayscale':
+            return grayscale(image_arr, image_flet)
         case 'brightness':
             return brightness(image_arr, image_flet, values)
         case 'saturation':
             return saturation(image_arr, image_flet, values)
         case 'contrast':
             return contrast(image_arr, image_flet, values)
-        case 'grayscale':
-            return grayscale(image_arr, image_flet)
         

@@ -64,6 +64,8 @@ def option_animate(operation: str, cont: ft.Container) -> None:
             cont.height = 100 if cont.height == 3 else 3
         case 'resize':
             cont.height = 165 if cont.height == 3 else 3
+        case 'color adjustments':
+            cont.height = 240 if cont.height == 3 else 3
         case _:
             cont.height = 140 if cont.height == 3 else 3
             
@@ -107,10 +109,12 @@ def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> f
         'blur', 
         'sharpen',
         type_divider('Colors'), 
+        'color adjustments',
+        'hue',
+        'grayscale',
         'brightness', 
         'saturation',
-        'contrast',
-        'grayscale'
+        'contrast'
     ]
 
     for element in elements:
