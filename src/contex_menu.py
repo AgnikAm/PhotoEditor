@@ -124,6 +124,8 @@ def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 2, 0)
         case 'sharpen':
             return build_slider(name, photo_arr, photo_flet, 1, 10, 9, "{value}", 1, 1)
+        case 'noise':
+            return build_slider(name, photo_arr, photo_flet, 0, 1, 20, "{value}", 1, 0)
         case 'color adjustments':
             return build_color_sliders(name, photo_arr, photo_flet)
         case 'hue':
@@ -134,5 +136,6 @@ def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1, 1)
         case 'contrast':
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1, 1)
+        case 'vignette':
+            return build_slider(name, photo_arr, photo_flet, 0, 1, 10, "{value}", 1, 0)
 
-    

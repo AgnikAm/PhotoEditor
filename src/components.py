@@ -32,7 +32,7 @@ def build_navbar(page: ft.Page, button1: MyButton, button2: MyButton, path: ft.T
 
 def build_operation_btn(operation: str, container: ft.Container, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.FilledButton:
     operation_btn = MyButton(operation)
-    if operation != 'rotate' and operation != 'grayscale':
+    if operation not in ['rotate', 'black & white', 'sepia']:
         operation_btn.define_onclick(lambda _: option_animate(operation, container))
     else:
         operation_btn.define_onclick(lambda _: add_image_operation(operation, photo_arr, photo_flet))
@@ -104,17 +104,21 @@ def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> f
         type_divider('Shape'), 
         'rotate',
         'flip',
-        'resize', 
+        'resize',
         type_divider('Sharpness'), 
-        'blur', 
+        'blur',
         'sharpen',
+        'noise',
         type_divider('Colors'), 
         'color adjustments',
         'hue',
-        'grayscale',
         'brightness', 
         'saturation',
-        'contrast'
+        'contrast',
+        type_divider('Filters'),
+        'black & white',
+        'sepia',
+        'vignette'
     ]
 
     for element in elements:
