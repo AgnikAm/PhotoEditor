@@ -7,7 +7,7 @@ from functions.files_operations import update_image, add_to_history
 from typing import Callable, Optional
 
 
-def rotate(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
+def rotate(image_arr: ft.Ref[np.ndarray]) -> None:
     if image_arr.value is None:
         return
     
@@ -25,23 +25,17 @@ def rotate(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
 
     image_arr.value = cv2.warpAffine(image_arr.value, rotation_matrix, (bound_w, bound_h), flags=cv2.INTER_NEAREST)
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def flip(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float]) -> None:
+def flip(image_arr: ft.Ref[np.ndarray], values: list[float]) -> None:
     if image_arr.value is None:
         return
     
     flipped_image = cv2.flip(image_arr.value, int(values[0]))
     image_arr.value = flipped_image
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def resize(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[float]) -> None:
-    if values is None or image_arr.value is None:
+def resize(image_arr: ft.Ref[np.ndarray], values: list[float]) -> None:
+    if image_arr.value is None or values is None:
         return
     
     new_width = int(values[0])
@@ -49,56 +43,32 @@ def resize(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: list[flo
     
     image_arr.value = cv2.resize(image_arr.value, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def blur(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, blur_factor: list[float]) -> None:
-    if blur_factor is None or image_arr.value is None:
+def blur(image_arr: ft.Ref[np.ndarray], blur_factor: list[float]) -> None:
+    if image_arr.value is None or blur_factor is None:
         return
     
     pil_image = Image.fromarray(image_arr.value)
     blurred_image = pil_image.filter(ImageFilter.GaussianBlur(blur_factor[0]))
     image_arr.value = np.array(blurred_image)
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def sharpen(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, kernel_size: list[float]) -> None:
-    if kernel_size is None or image_arr.value is None:
+def sharpen(image_arr: ft.Ref[np.ndarray], sharpen_factor: list[float]) -> None:
+    if image_arr.value is None or sharpen_factor is None:
         return
     
-    mapping = {
-        0: 1,
-        1: 3,
-        2: 5,
-        3: 7,
-        4: 9,
-        5: 11,
-        6: 13,
-        7: 15,
-        8: 17,
-        9: 19,
-        10: 21
-    }
-
-    kernel_size = mapping[kernel_size[0]]
+    sharpened_channels = []
+    for channel in cv2.split(image_arr.value):
+        blurred_channel = cv2.GaussianBlur(channel, (0, 0), sharpen_factor[0])
+        unsharp_mask = cv2.addWeighted(channel, 1.0 + sharpen_factor[0], blurred_channel, -sharpen_factor[0], 0)
+        sharpened_channels.append(unsharp_mask)
     
-    blurred = cv2.GaussianBlur(image_arr.value, (kernel_size, kernel_size), 1.0)
-    sharpened = 2.0 * image_arr.value - float(1.0) * blurred
+    sharpened_image = cv2.merge(sharpened_channels)
     
-    sharpened = np.maximum(sharpened, np.zeros(sharpened.shape))
-    sharpened = np.minimum(sharpened, 255 * np.ones(sharpened.shape))
-    sharpened = sharpened.round().astype(np.uint8)
-    
-    image_arr.value = np.array(sharpened)
-
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
+    image_arr.value = sharpened_image
 
 
-def noise(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, noise_intensity: list[float]) -> None:
+def noise(image_arr: ft.Ref[np.ndarray], noise_intensity: list[float]) -> None:
     if image_arr.value is None:
         return
     
@@ -115,12 +85,9 @@ def noise(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, noise_intensity: 
         
         image_arr.value = noisy_image
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def color_adjustments(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, colors: list[float]) -> None:
-    if colors is None or image_arr.value is None or len(image_arr.value.shape) != 3 or image_arr.value.shape[2] < 3:
+def color_adjustments(image_arr: ft.Ref[np.ndarray], colors: list[float]) -> None:
+    if image_arr.value is None or image_arr.value.shape[2] < 3 or colors is None:
         return
     
     image = image_arr.value.astype(np.float32)
@@ -131,12 +98,9 @@ def color_adjustments(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, color
     image = np.clip(image, 0, 255).astype(np.uint8)
     image_arr.value = image
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def hue(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, hue_factor: list[float]) -> None:
-    if hue_factor is None or image_arr.value is None or len(image_arr.value.shape) != 3 or image_arr.value.shape[2] < 3:
+def hue(image_arr: ft.Ref[np.ndarray], hue_factor: list[float]) -> None:
+    if image_arr.value is None or image_arr.value.shape[2] < 3 or hue_factor is None:
         return
     
     if image_arr.value.shape[2] == 3:
@@ -160,12 +124,9 @@ def hue(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, hue_factor: list[fl
 
         image_arr.value = adjusted_image
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def brightness(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, brightness_factor: list[float]):
-    if brightness_factor is None or image_arr.value is None:
+def brightness(image_arr: ft.Ref[np.ndarray], brightness_factor: list[float]):
+    if image_arr.value is None or brightness_factor is None:
         return
     
     if image_arr.value.shape[2] == 3: # RGB no alpha
@@ -187,12 +148,9 @@ def brightness(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, brightness_f
 
         image_arr.value = np.dstack((bgr_image, alpha_channel))
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def saturation(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, saturation_factor: list[float]) -> None:
-    if saturation_factor is None or image_arr.value is None:
+def saturation(image_arr: ft.Ref[np.ndarray], saturation_factor: list[float]) -> None:
+    if image_arr.value is None or saturation_factor is None :
         return
 
     if image_arr.value.shape[2] == 3:
@@ -214,12 +172,9 @@ def saturation(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, saturation_f
 
         image_arr.value = np.dstack((bgr_image, alpha_channel))
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def contrast(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, contrast_factor: list[float]) -> None:
-    if contrast_factor is None or image_arr.value is None:
+def contrast(image_arr: ft.Ref[np.ndarray], contrast_factor: list[float]) -> None:
+    if image_arr.value is None or contrast_factor is None:
         return
     
     if len(image_arr.value.shape) == 3 and image_arr.value.shape[2] == 4:
@@ -241,11 +196,66 @@ def contrast(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, contrast_facto
         image_arr.value = adjusted
         
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
+def noise(image_arr: ft.Ref[np.ndarray], noise_intensity: list[float]) -> None:
+    if image_arr.value is None:
+        return
+    
+    noise = np.random.normal(scale=noise_intensity[0], size=image_arr.value.shape).astype(np.uint8)
+    noisy_image = cv2.add(image_arr.value, noise)
+    
+    if image_arr.value.shape[2] == 3:
+        image_arr.value = noisy_image
+
+    elif image_arr.value.shape[2] == 4:
+        alpha_channel = image_arr.value[:, :, 3]
+        transparent_pixels = np.where(alpha_channel == 0, True, False)
+        noisy_image[transparent_pixels] = image_arr.value[transparent_pixels]
+        
+        image_arr.value = noisy_image
 
 
-def grayscale(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
+def vignette(image_arr: ft.Ref[np.ndarray], vignette_intensity: list[float]) -> None:
+    if image_arr.value is None or vignette_intensity is None:
+        return
+    
+    height, width = image_arr.value.shape[:2]
+    y, x = np.ogrid[:height, :width]
+
+    center_x = width / 2
+    center_y = height / 2
+    distance = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+    
+    max_distance = math.sqrt(center_x ** 2 + center_y ** 2)
+    distance_normalized = distance / max_distance
+    
+    vignette_mask = 1 - vignette_intensity * distance_normalized
+    vignette_mask = np.clip(vignette_mask, 0, 1)
+    
+    if len(image_arr.value.shape) == 3:
+        image = image_arr.value.copy()
+        for i in range(3):
+            image[:, :, i] = image[:, :, i] * vignette_mask
+
+        image_arr.value = image
+
+
+def inversion(image_arr: ft.Ref[np.ndarray]) -> None:
+    if image_arr.value is None:
+        return
+    
+    if image_arr.value.shape[2] == 3:
+        inverted_image = 255 - image_arr.value
+        image_arr.value = inverted_image
+
+    elif image_arr.value.shape[2] == 4:
+        bgr_image = image_arr.value[:, :, :3]
+        alpha_channel = image_arr.value[:, :, 3]
+
+        inverted_image = 255 - bgr_image
+        image_arr.value = np.dstack((inverted_image, alpha_channel))
+
+
+def grayscale(image_arr: ft.Ref[np.ndarray]) -> None:
     if image_arr.value is None:
         return
     
@@ -260,16 +270,12 @@ def grayscale(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
 
     else:
         grayscale_image = cv2.cvtColor(image_arr.value, cv2.COLOR_BGR2GRAY)
-
         rgb_image = np.dstack((grayscale_image, grayscale_image, grayscale_image))
 
         image_arr.value = rgb_image
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
 
-
-def sepia(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
+def sepia(image_arr: ft.Ref[np.ndarray]) -> None:
     if image_arr.value is None:
         return
 
@@ -298,78 +304,220 @@ def sepia(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> None:
 
         image_arr.value = np.dstack((sepia_image, alpha_channel))
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
+
+def generate_gradient(
+        width: int, 
+        height: int, 
+        direction: str, 
+        color_start: tuple[int, int, int], 
+        color_end: tuple[int, int, int]
+    ):
+    gradient = np.zeros((height, width, 3), dtype=np.uint8)
+
+    if direction == 'horizontal':
+        for x in range(width):
+            gradient[:, x, 0] = np.interp(x, (0, width - 1), (color_start[0], color_end[0]))
+            gradient[:, x, 1] = np.interp(x, (0, width - 1), (color_start[1], color_end[1]))
+            gradient[:, x, 2] = np.interp(x, (0, width - 1), (color_start[2], color_end[2]))
+            
+    elif direction == 'vertical':
+        for y in range(height):
+            gradient[y, :, 0] = np.interp(y, (0, height - 1), (color_start[0], color_end[0]))
+            gradient[y, :, 1] = np.interp(y, (0, height - 1), (color_start[1], color_end[1]))
+            gradient[y, :, 2] = np.interp(y, (0, height - 1), (color_start[2], color_end[2]))
+            
+    elif direction == 'diagonal':
+        for y in range(height):
+            for x in range(width):
+                t = min(x / width, y / height)
+                gradient[y, x, 0] = int(color_start[0] + t * (color_end[0] - color_start[0]))
+                gradient[y, x, 1] = int(color_start[1] + t * (color_end[1] - color_start[1]))
+                gradient[y, x, 2] = int(color_start[2] + t * (color_end[2] - color_start[2]))
+    
+    elif direction == 'radial':
+        center_x = width / 2
+        center_y = height / 2
+        max_distance = np.sqrt(center_x ** 2 + center_y ** 2)
+        for y in range(height):
+            for x in range(width):
+                distance = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+                t = min(distance / max_distance, 1)
+                gradient[y, x, 0] = int(color_start[0] + t * (color_end[0] - color_start[0]))
+                gradient[y, x, 1] = int(color_start[1] + t * (color_end[1] - color_start[1]))
+                gradient[y, x, 2] = int(color_start[2] + t * (color_end[2] - color_start[2]))
+
+    return gradient
 
 
-import numpy as np
-import cv2
-import math
+def apply_gradient_overlay(image, gradient, opacity):
+    if len(image.shape) == 3 and image.shape[2] == 4:
+        bgr_image = image[:, :, :3]
+        alpha_channel = image[:, :, 3]
 
-def vignette(image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, vignette_intensity: list[float]) -> None:
-    if image_arr.value is None:
+        non_transparent_pixels = np.where(alpha_channel > 0, True, False)
+
+        blended_bgr = cv2.addWeighted(bgr_image, 1 - opacity, gradient, opacity, 0)
+        
+        alpha_mask = np.zeros_like(alpha_channel)
+        alpha_mask[non_transparent_pixels] = 255
+
+        blended_image = np.dstack((blended_bgr, alpha_mask))
+    else:
+        blended_image = cv2.addWeighted(image, 1 - opacity, gradient, opacity, 0)
+
+    return blended_image
+
+
+def mojave(image_arr: ft.Ref[np.ndarray], strenght: list[float]) -> None:
+    if image_arr.value is None or strenght is None:
         return
     
-    height, width = image_arr.value.shape[:2]
-    y, x = np.ogrid[:height, :width]
+    saturation(image_arr, [0.8])
+    gradient = generate_gradient(
+        image_arr.value.shape[1], 
+        image_arr.value.shape[0], 
+        direction='vertical', 
+        color_start=(182, 118, 13), 
+        color_end=(67, 54, 54)
+    )
+    image_arr.value = apply_gradient_overlay(image_arr.value, gradient, strenght[0] * 0.5)
+    blur(image_arr, [0.7])
+    brightness(image_arr, [strenght[0] * 15])
+    contrast(image_arr, [1.3])
 
-    center_x = width / 2
-    center_y = height / 2
-    distance = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+
+def nostalgia(image_arr: ft.Ref[np.ndarray], strenght: list[float]) -> None:
+    if image_arr.value is None or strenght is None:
+        return
     
-    max_distance = math.sqrt(center_x ** 2 + center_y ** 2)
-    distance_normalized = distance / max_distance
+    saturation(image_arr, [0.8])
+    gradient = generate_gradient(
+        image_arr.value.shape[1], 
+        image_arr.value.shape[0], 
+        direction='radial', 
+        color_start=(247, 176, 141), 
+        color_end=(128, 84, 4)
+    )
+    image_arr.value = apply_gradient_overlay(image_arr.value, gradient, strenght[0] * 0.5)
+    blur(image_arr, [1])
+    brightness(image_arr, [strenght[0] * 10])
+    contrast(image_arr, [0.9])
+
+
+def neon(image_arr: ft.Ref[np.ndarray], strenght: list[float]) -> None:
+    if image_arr.value is None or strenght is None:
+        return
     
-    vignette_mask = 1 - vignette_intensity * distance_normalized
-    vignette_mask = np.clip(vignette_mask, 0, 1)
-    
-    if len(image_arr.value.shape) == 3:
-        image = image_arr.value.copy()
-        for i in range(3):
-            image[:, :, i] = image[:, :, i] * vignette_mask
+    gradient = generate_gradient(
+        image_arr.value.shape[1], 
+        image_arr.value.shape[0], 
+        direction='horizontal', 
+        color_start=(148, 2, 201), 
+        color_end=(0, 196, 193)
+    )
+    image_arr.value = apply_gradient_overlay(image_arr.value, gradient, strenght[0] * 0.5)
+    contrast(image_arr, [max(strenght[0] * 2, 1.3)])
+    saturation(image_arr, [1.3])
+    sharpen(image_arr, [1.5])
 
-        image_arr.value = image
 
-    elif len(image_arr.value.shape) == 4:
-        bgr_image = image_arr.value[:, :, :3].copy()
-        alpha_channel = image_arr.value[:, :, 3]
-        for i in range(3):
-            bgr_image[:, :, i] = bgr_image[:, :, i] * vignette_mask
-            
-        image_arr.value = np.dstack((bgr_image, alpha_channel))
+def twilight(image_arr: ft.Ref[np.ndarray], strenght: list[float]) -> None:
+    if image_arr.value is None or strenght is None:
+        return
 
-    add_to_history(image_arr)
-    update_image(image_arr, image_flet)
+    saturation(image_arr, [0.8])
+    color_adjustments(image_arr, [0.8, 1.45, 1.45])
+    gradient = generate_gradient(
+        image_arr.value.shape[1], 
+        image_arr.value.shape[0], 
+        direction='vertical', 
+        color_start=(24, 64, 53), 
+        color_end=(18, 42, 66)
+    )
+    image_arr.value = apply_gradient_overlay(image_arr.value, gradient, strenght[0] * 0.4)
+    saturation(image_arr, [1.3])
+    contrast(image_arr, [1.3])
+    brightness(image_arr, [strenght[0] * -15])
+    sharpen(image_arr, [strenght[0] * 0.8])
+    vignette(image_arr, [0.6])
 
 
 def add_image_operation(name: str, image_arr: ft.Ref[np.ndarray], image_flet: ft.Image, values: Optional[list] = None) -> Callable:
     match name:
         case 'rotate':
-            return rotate(image_arr, image_flet)
+            rotate(image_arr)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'flip':
-            return flip(image_arr, image_flet, values)
+            flip(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'resize':
-            return resize(image_arr, image_flet, values)
+            resize(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'blur':
-            return blur(image_arr, image_flet, values)
+            blur(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'sharpen':
-            return sharpen(image_arr, image_flet, values)
-        case 'noise':
-            return noise(image_arr, image_flet, values)
+            sharpen(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'color adjustments':
-            return color_adjustments(image_arr, image_flet, values)
+            color_adjustments(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'hue':
-            return hue(image_arr, image_flet, values)
+            hue(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'brightness':
-            return brightness(image_arr, image_flet, values)
+            brightness(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'saturation':
-            return saturation(image_arr, image_flet, values)
+            saturation(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'contrast':
-            return contrast(image_arr, image_flet, values)
-        case 'black & white':
-            return grayscale(image_arr, image_flet)
-        case 'sepia':
-            return sepia(image_arr, image_flet)
+            contrast(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'noise':
+            noise(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         case 'vignette':
-            return vignette(image_arr, image_flet, values)
+            vignette(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'inversion':
+            inversion(image_arr)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'black & white':
+            grayscale(image_arr)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'sepia':
+            sepia(image_arr)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'mojave':
+            mojave(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'nostalgia':
+            nostalgia(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'neon':
+            neon(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
+        case 'twilight':
+            twilight(image_arr, values)
+            add_to_history(image_arr)
+            update_image(image_arr, image_flet)
         

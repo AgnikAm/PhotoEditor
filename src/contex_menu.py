@@ -65,9 +65,9 @@ def build_slider(
 
 
 def build_color_sliders(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
-    red = ft.Slider(min=0, max=1, divisions=255, label="{value}", value=1, round=3, height=20)
-    green = ft.Slider(min=0, max=1, divisions=255, label="{value}", value=1, round=3, height=20)
-    blue = ft.Slider(min=0, max=1, divisions=255, label="{value}", value=1, round=3, height=20)
+    red = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20)
+    green = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20)
+    blue = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20)
 
     apply_button = MyButton('apply')
     apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [red.value, green.value, blue.value]))
@@ -123,9 +123,7 @@ def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image
         case 'blur':
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 2, 0)
         case 'sharpen':
-            return build_slider(name, photo_arr, photo_flet, 1, 10, 9, "{value}", 1, 1)
-        case 'noise':
-            return build_slider(name, photo_arr, photo_flet, 0, 1, 20, "{value}", 1, 0)
+            return build_slider(name, photo_arr, photo_flet, 0, 3, 30, "{value}", 1, 1)
         case 'color adjustments':
             return build_color_sliders(name, photo_arr, photo_flet)
         case 'hue':
@@ -136,6 +134,16 @@ def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1, 1)
         case 'contrast':
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 1, 1)
+        case 'noise':
+            return build_slider(name, photo_arr, photo_flet, 0, 1, 20, "{value}", 1, 0)
         case 'vignette':
+            return build_slider(name, photo_arr, photo_flet, 0, 1, 10, "{value}", 1, 0)
+        case 'mojave':
+            return build_slider(name, photo_arr, photo_flet, 0, 1, 10, "{value}", 1, 0)
+        case 'nostalgia':
+            return build_slider(name, photo_arr, photo_flet, 0, 1, 10, "{value}", 1, 0)
+        case 'neon':
+            return build_slider(name, photo_arr, photo_flet, 0, 1, 10, "{value}", 1, 0)
+        case 'twilight':
             return build_slider(name, photo_arr, photo_flet, 0, 1, 10, "{value}", 1, 0)
 
