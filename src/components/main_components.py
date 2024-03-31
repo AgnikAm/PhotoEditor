@@ -1,7 +1,7 @@
 import flet as ft
 import numpy as np
-from buttons import MyButton
-from contex_menu import build_content
+from components.buttons import MyButton
+from components.contex_menu import build_content
 from functions.image_operations import add_image_operation
 from functions.files_operations import undo_command, redo_command
 
@@ -66,6 +66,12 @@ def option_animate(operation: str, cont: ft.Container) -> None:
             cont.height = 165 if cont.height == 3 else 3
         case 'color adjustments':
             cont.height = 240 if cont.height == 3 else 3
+        case 'solid overlay':
+            cont.height = 430 if cont.height == 3 else 3
+        case 'gradient overlay':
+            cont.height = 810 if cont.height == 3 else 3
+        case 'image overlay':
+            cont.height = 215 if cont.height == 3 else 3
         case _:
             cont.height = 140 if cont.height == 3 else 3
             
@@ -114,6 +120,9 @@ def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> f
         'brightness', 
         'saturation',
         'contrast',
+        type_divider('Overlays'),
+        'solid overlay',
+        'gradient overlay',
         type_divider('Miscellaneous'),
         'noise',
         'vignette',
@@ -121,8 +130,11 @@ def build_edit_options(photo_arr: ft.Ref[np.ndarray], image_flet: ft.Image) -> f
         type_divider('Filters'),
         'black & white',
         'sepia',
+        'vintage',
+        'retro',
         'mojave',
         'nostalgia',
+        'clean',
         'neon',
         'twilight'
     ]

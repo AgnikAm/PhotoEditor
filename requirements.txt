@@ -1,5 +1,5 @@
 flet==0.21.2
+flet_contrib==2024.3.6
 numpy==1.23.5
 opencv_python==4.9.0.80
-Pillow==10.1.0
 Pillow==10.2.0

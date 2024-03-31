@@ -1,8 +1,8 @@
 import flet as ft
 import numpy as np
 from PIL import Image
-from buttons import MyButton
-from components import build_navbar, build_edit_options, undo_redo_buttons, build_sidebar, build_canvas, build_background, build_workspace
+from components.buttons import MyButton
+from components.main_components import build_navbar, build_edit_options, undo_redo_buttons, build_sidebar, build_canvas, build_background, build_workspace
 from functions.files_operations import pick_files_open, pick_file_save
 
 
