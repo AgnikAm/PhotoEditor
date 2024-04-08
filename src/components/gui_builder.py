@@ -90,7 +90,7 @@ class GUIBuilder:
             bgcolor='#519ec5',
             content=ft.Row(
                 controls=[
-                    ft.Image(src='assets\Logo.png'),
+                    ft.Image(src='assets/Logo.png'),
                     button1.build_file(),
                     button2.build_file(),
                     self.original_path
