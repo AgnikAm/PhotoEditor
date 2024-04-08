@@ -40,7 +40,16 @@ def create_copy(file_path: str) -> str:
     return destination
 
 
-def pick_files_open(old_path: str, new_path: str, photo_flet: ft.Image, photo_arr: ft.Ref[np.ndarray], e: ft.FilePickerResultEvent) -> None:
+def pick_files_open(
+        old_path: str,
+        new_path: str,
+        photo_flet: ft.Image, 
+        photo_arr: ft.Ref[np.ndarray],
+        width_input: ft.TextField,
+        height_input: ft.TextField,
+        e: ft.FilePickerResultEvent
+    ) -> None:
+
     global history, current_index
 
     if e.files:
@@ -56,13 +65,17 @@ def pick_files_open(old_path: str, new_path: str, photo_flet: ft.Image, photo_ar
         photo_flet.src = new_file_path
         photo_arr.value = np.asarray(open_image(new_file_path))
 
+        height, width, _ = photo_arr.value.shape
+        width_input.value = width
+        height_input.value = height
+
         add_to_history(photo_arr)
         current_index = 0
 
         photo_flet.update()
 
 
-def pick_file_save( photo_flet: ft.Image, photo_arr: ft.Ref[np.ndarray], e: ft.FilePickerResultEvent) -> None:
+def pick_file_save(photo_flet: ft.Image, photo_arr: ft.Ref[np.ndarray], e: ft.FilePickerResultEvent) -> None:
     save_location = e.path
     if save_location:
         if '.' not in save_location:

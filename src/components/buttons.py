@@ -16,9 +16,10 @@ class MyButton:
     def build_file(self) -> ft.OutlinedButton:
         self.style = ft.ButtonStyle(
             bgcolor={
-                ft.MaterialState.DEFAULT: '#374362',
-                ft.MaterialState.HOVERED: '#1d3678'
+                ft.MaterialState.DEFAULT: '#29292b',
+                ft.MaterialState.HOVERED: '#943155'
             },
+            color='#dedede'
         )
 
         return ft.OutlinedButton(
@@ -31,8 +32,8 @@ class MyButton:
         self.style = ft.ButtonStyle(
             color='white',
             bgcolor={
-                ft.MaterialState.DEFAULT: '#374362',
-                ft.MaterialState.HOVERED: '#1d3678'
+                ft.MaterialState.DEFAULT: '#3f617b',
+                ft.MaterialState.HOVERED: '#943155'
             },
             shape=ft.RoundedRectangleBorder(radius=5),
         )
@@ -48,8 +49,8 @@ class MyButton:
     def build_command(self, icon: ft.Icon) -> ft.FilledButton:
         self.style = ft.ButtonStyle(
             bgcolor={
-                ft.MaterialState.DEFAULT: '#374362',
-                ft.MaterialState.HOVERED: '#1d3678'
+                ft.MaterialState.DEFAULT: '#943155',
+                ft.MaterialState.HOVERED: '#54182e'
             },
             shape=ft.RoundedRectangleBorder(radius=3)
         )

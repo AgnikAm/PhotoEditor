@@ -7,30 +7,14 @@ from components.buttons import MyButton
 from functions.image_operations import add_image_operation
 
 
-def build_resize(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
-    width = ft.TextField(
-        label="width",
-        border_color='#d9e3ff',
-        input_filter=ft.InputFilter(allow=True, regex_string=r"[0-9]", replacement_string=""),
-        height=40,
-        text_style=ft.TextStyle(size=12),
-    )
-
-    height = ft.TextField(
-        label="height",
-        border_color='#d9e3ff',
-        input_filter=ft.InputFilter(allow=True, regex_string=r"[0-9]", replacement_string=""),
-        height=40,
-        text_style=ft.TextStyle(size=12),
-    )
-
+def build_resize(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image, width_input: ft.TextField, height_input: ft.TextField, check: bool) -> ft.Container:
     apply_button = MyButton('apply')
-    apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [width.value, height.value]))
+    apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [width_input.value, height_input.value]))
     apply_button = apply_button.build_file()
 
     return ft.Container(
         content=ft.Column(
-            controls=[width, height, ft.Container(content=apply_button, alignment=ft.alignment.center)],
+            controls=[width_input, height_input, ft.Container(content=apply_button, alignment=ft.alignment.center)],
         ),
         padding=20,
     )
@@ -48,7 +32,7 @@ def build_slider(
         value: Optional[float] = None
     ) -> ft.Container:
 
-    slider = ft.Slider(min=min, max=max, divisions=division, label=label, round=round, value=value)
+    slider = ft.Slider(min=min, max=max, divisions=division, label=label, round=round, value=value, active_color='#dedede')
 
     apply_button = MyButton('apply')
     apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [slider.value]))
@@ -57,11 +41,12 @@ def build_slider(
     return ft.Container(
         content=ft.Column(
             controls=[
+                ft.Container(ft.Text('Strength'), margin=ft.margin.only(left=15)),
                 slider, 
                 ft.Container(content=apply_button, alignment=ft.alignment.center)
             ],
         ),
-        margin=ft.margin.only(top=40, left=5, right=5)
+        margin=ft.margin.only(top=15, left=5, right=5)
     )
 
 
@@ -120,6 +105,8 @@ def build_solid_pick(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Im
         color='#000000',
         width=200
     )
+
+    color_pick.hex.visible = False
 
     slider = ft.Slider(min=0, max=1, divisions=20, label='{value}', round=2, value=0.5)
 
@@ -230,8 +217,6 @@ def build_content(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image
     match name:
         case 'flip':
             return build_radio(name, photo_arr, photo_flet)
-        case 'resize':
-            return build_resize(name, photo_arr, photo_flet)
         case 'blur':
             return build_slider(name, photo_arr, photo_flet, 0, 2, 40, "{value}", 2, 0)
         case 'sharpen':

@@ -1,13 +1,13 @@
 import flet as ft
 import numpy as np
+from PIL import Image
 from components.buttons import MyButton
-from components.contex_menu import build_content
+from components.contex_menu import build_content, build_resize
 from functions.image_operations import add_image_operation
 from functions.files_operations import undo_command, redo_command, pick_files_open, pick_file_save
 
-
 class GUIBuilder:
-    
+
     def __init__(
             self, 
             page: ft.Page, 
@@ -21,26 +21,45 @@ class GUIBuilder:
         self.image_flet = ft.Image(src=self.original_path)
         self.image_arr = image_arr
 
+        self.width_input_field = ft.TextField(
+            label="width",
+            border_color='#d9e3ff',
+            input_filter=ft.InputFilter(allow=True, regex_string=r"[0-9]", replacement_string=""),
+            height=40,
+            text_style=ft.TextStyle(size=12),
+            value=self.image_flet.width,
+        )
+        self.height_input_field = ft.TextField(
+            label="height",
+            border_color='#d9e3ff',
+            input_filter=ft.InputFilter(allow=True, regex_string=r"[0-9]", replacement_string=""),
+            height=40,
+            text_style=ft.TextStyle(size=12),
+            value=self.image_flet.height
+        )
+
         self.open_picker = ft.FilePicker(
             on_result=lambda e: pick_files_open(
                 self.original_path, 
                 self.current_path, 
                 self.image_flet, 
-                self.image_arr, 
+                self.image_arr,
+                self.width_input_field,
+                self.height_input_field,
                 e
-            )
+            ),
         )
         self.save_picker = ft.FilePicker(
             on_result=lambda e: pick_file_save( 
-                self.image_arr,
-                self.image_flet, 
+                self.image_flet,
+                self.image_arr, 
                 e
             )
         )
         self.page.overlay.append(self.open_picker)
         self.page.overlay.append(self.save_picker)
 
-
+    
     def open_btn(self) -> MyButton:
         open_btn = MyButton('Open photo')
         open_btn.define_onclick(
@@ -68,18 +87,10 @@ class GUIBuilder:
         return ft.Container(
             width=self.page.window_max_width,
             height=70,
-            bgcolor='#323445',
+            bgcolor='#519ec5',
             content=ft.Row(
                 controls=[
-                    ft.Container(
-                        ft.Text(value='Photo Editor', size=25),
-                        margin=ft.margin.only(left=50)
-                    ),
-                    ft.Container(
-                          ft.Icon(ft.icons.ENHANCE_PHOTO_TRANSLATE_ROUNDED),
-                          margin=ft.margin.only(right=30)
-                    ),
-                    ft.VerticalDivider(width=20, thickness=2),
+                    ft.Image(src='assets\Logo.png'),
                     button1.build_file(),
                     button2.build_file(),
                     self.original_path
@@ -101,15 +112,26 @@ class GUIBuilder:
 
 
     def operation_options(self, operation: str) -> ft.Container:
-        return ft.Container(
-            width=300,
-            height=3,
-            bgcolor='#1d3678',
-            margin=ft.margin.only(top=-5),
-            border_radius=ft.border_radius.only(bottom_left=5, bottom_right=5),
-            animate=ft.animation.Animation(500, "ease"),
-            content=build_content(operation, self.image_arr, self.image_flet)
-        )
+        if operation != 'resize':
+            return ft.Container(
+                width=300,
+                height=3,
+                bgcolor='#943155',
+                margin=ft.margin.only(top=-5),
+                border_radius=ft.border_radius.only(bottom_left=5, bottom_right=5),
+                animate=ft.animation.Animation(500, "ease"),
+                content=build_content(operation, self.image_arr, self.image_flet)
+            )
+        elif operation == 'resize':
+            return ft.Container(
+                width=300,
+                height=3,
+                bgcolor='#943155',
+                margin=ft.margin.only(top=-5),
+                border_radius=ft.border_radius.only(bottom_left=5, bottom_right=5),
+                animate=ft.animation.Animation(500, "ease"),
+                content=build_resize(operation, self.image_arr, self.image_flet, self.width_input_field, self.height_input_field, True)
+            )
 
 
     def option_animate(self, operation: str, cont: ft.Container) -> None:
@@ -119,28 +141,31 @@ class GUIBuilder:
             case 'grayscale':
                 pass
             case 'flip':
-                cont.height = 100 if cont.height == 3 else 3
+                cont.height = 105 if cont.height == 3 else 3
             case 'resize':
-                cont.height = 165 if cont.height == 3 else 3
+                cont.height = 170 if cont.height == 3 else 3
             case 'color adjustments':
-                cont.height = 240 if cont.height == 3 else 3
+                cont.height = 245 if cont.height == 3 else 3
             case 'solid overlay':
-                cont.height = 430 if cont.height == 3 else 3
+                cont.height = 435 if cont.height == 3 else 3
             case 'gradient overlay':
-                cont.height = 810 if cont.height == 3 else 3
+                cont.height = 815 if cont.height == 3 else 3
             case 'image overlay':
-                cont.height = 215 if cont.height == 3 else 3
+                cont.height = 220 if cont.height == 3 else 3
             case _:
-                cont.height = 140 if cont.height == 3 else 3
+                cont.height = 150 if cont.height == 3 else 3
                 
-        cont.bgcolor = '#1d3678' if cont.bgcolor == '#374362' else '#374362'
+        cont.bgcolor = '#3f617b' if cont.bgcolor == '#943155' else '#943155'
         cont.update()
 
 
     def type_divider(self, text: str) -> ft.Column:
         return ft.Column(
             controls=[
-                ft.Text(text),
+                ft.Text(
+                    text,
+                    size=16,
+                    style=ft.TextStyle(letter_spacing=3)),
                 ft.Divider()
             ]
         )
@@ -210,9 +235,9 @@ class GUIBuilder:
 
     def static_sidebar(self) -> ft.Container:
         return ft.Container(
-                width=275,
+                width=278,
                 height=60,
-                bgcolor='#202230',
+                bgcolor='#29292b',
                 content=ft.Container(
                     content=self.undo_redo_buttons(),
                     margin=ft.margin.only(left=60)
@@ -222,9 +247,9 @@ class GUIBuilder:
 
     def dynamic_sidebar(self) -> ft.Container:
         return ft.Container(
-                width=275,
+                width=278,
                 height=self.page.window_height - 60,
-                bgcolor='#202230',
+                bgcolor='#29292b',
                 content=self.edit_options()
         )
 
@@ -269,7 +294,8 @@ class GUIBuilder:
                     self.background()
                 ]
             ),
-            margin=ft.margin.symmetric(vertical=-10)
+            margin=ft.margin.symmetric(vertical=-10),
+            bgcolor='#18181a'
         )
 
 
@@ -282,3 +308,4 @@ class GUIBuilder:
         )
 
         self.page.add(gui)
+        
