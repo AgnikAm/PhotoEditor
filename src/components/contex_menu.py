@@ -51,9 +51,9 @@ def build_slider(
 
 
 def build_color_sliders(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) -> ft.Container:
-    red = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20)
-    green = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20)
-    blue = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20)
+    red = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20, active_color='#dedede')
+    green = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20, active_color='#dedede')
+    blue = ft.Slider(min=0, max=2, divisions=510, label="{value}", value=1, round=3, height=20, active_color='#dedede')
 
     apply_button = MyButton('apply')
     apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [red.value, green.value, blue.value]))
@@ -79,8 +79,8 @@ def build_radio(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Image) 
     radio_group = ft.RadioGroup(
         content=ft.Row(
             controls=[
-                ft.Radio(value=0, label='X axis'),
-                ft.Radio(value=1, label='Y axis')
+                ft.Radio(value=0, label='X axis', fill_color='#dedede'),
+                ft.Radio(value=1, label='Y axis', fill_color='#dedede')
             ]
         )
     )
@@ -108,7 +108,7 @@ def build_solid_pick(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft.Im
 
     color_pick.hex.visible = False
 
-    slider = ft.Slider(min=0, max=1, divisions=20, label='{value}', round=2, value=0.5)
+    slider = ft.Slider(min=0, max=1, divisions=20, label='{value}', round=2, value=0.5, active_color='#dedede')
 
     apply_button = MyButton('apply')
     apply_button.define_onclick(lambda _: add_image_operation(name, photo_arr, photo_flet, [color_pick.color, slider.value]))
@@ -132,14 +132,14 @@ def build_gradient_pick(name: str, photo_arr: ft.Ref[np.ndarray], photo_flet: ft
             controls=[
                 ft.Row(
                     controls=[
-                    ft.Radio(value='horizontal', label='horizontal'),
-                    ft.Radio(value='vertical', label='vertical'),
+                    ft.Radio(value='horizontal', label='horizontal', fill_color='#dedede'),
+                    ft.Radio(value='vertical', label='vertical', fill_color='#dedede'),
                     ]
                 ),
                 ft.Row(
                     controls=[
-                    ft.Radio(value='diagonal', label='diagonal'),
-                    ft.Container(ft.Radio(value='radial', label='radial'), margin=ft.margin.only(left=8)),
+                    ft.Radio(value='diagonal', label='diagonal', fill_color='#dedede'),
+                    ft.Container(ft.Radio(value='radial', label='radial', fill_color='#dedede'), margin=ft.margin.only(left=8)),
                     ]
                 )
             ]

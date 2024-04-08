@@ -39,7 +39,7 @@ Installation:
     ```bash
    pip install -r requirements.txt
     ```
-7. Run the game
+7. Run the app
    
    ```bash
    python src/main.py
@@ -55,7 +55,7 @@ Installation:
   * Overlays: Elevate your image with solid or gradient overlays
   * Filters: Try out premade filters
 * **Undo and Redo** - Experiment fearlessly with intuitive undo and redo functionality, ensuring that every edit is reversible
-* Dynamic contex menus with interactive input such as:
+* **Dynamic contex menus with interactive input**:
   * input fields
   * sliders
   * radio
@@ -84,6 +84,40 @@ Graphical Interface (components):
 
 Integration:
 * app.py - Initializes GUI, constants and essential variables
+
+# GUI
+<div align="center">
+
+![GUI](assets/gui.PNG)
+
+Rotate/flip:
+
+![rotate/flip](assets/rotateflip.gif)
+
+Sharpness:
+
+![sharpness](assets/sharpness.gif)
+
+Colors:
+
+![colors](assets/colors.gif)
+
+Brightness/contrast/saturation:
+
+![bcs](assets/bcs.gif)
+
+Miscellaneous:
+
+![miscellaneous](assets/miscellaneous.gif)
+
+Overlays:
+
+![overlays](assets/overlays.gif)
+
+Filters:
+
+![filters](assets/filters.gif)
+
 
 # Examples
 <div align="center">
